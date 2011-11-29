@@ -948,6 +948,32 @@ class gsAPI {
 	}
 
 	/*
+	* Get stream key, ID, etc. from songID for a subscriber account.
+	* Requires country object obtained from getCountry and a logged-in
+	* sessionID from a Grooveshark Anywhere subscriber.
+	*/
+	public function getSubscriberStreamKey($songID, $lowBitrate=false) {
+		if (!$songID) {
+			trigger_error(__FUNCTION__." requires a valid songID.", E_USER_ERROR);
+		}
+		if (!$this->country) {
+			trigger_error(__FUNCTION__." requires a valid country. No country was found. Call getCountry()", E_USER_ERROR);
+		}
+		if (!$this->session) {
+			trigger_error(__FUNCTION__." requires a valid session. No session was found.", E_USER_ERROR);
+		}
+		$return = self::apiCall('getSubscriberStreamKey',array('songID'=>$songID, 'country'=>$this->country, 'sessionID'=>$this->session, 'lowBitrate'=>$lowBitrate));
+		if (isset($return['decoded']['result']['StreamKey'])) {
+			$serverURL = parse_url($return['decoded']['result']['url']);
+			$return['decoded']['result']['StreamServerHostname'] = $serverURL['host'];
+			return $return['decoded']['result'];
+		} else {
+			gsAPI::$lastError = $return['raw'];
+			return false;
+		}
+	}
+
+	/*
 	 * Marks an existing stream key as played for >30 seconds
 	 */
 
